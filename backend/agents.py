@@ -3,12 +3,25 @@ import json
 import asyncio
 import google.generativeai as genai
 from models import DocumentAnalysisResponse, RiskScore, ClauseHighlight
+from google.generativeai.types import HarmCategory, HarmBlockThreshold
+
+# Security: Production Safety Settings for Gemini 1.5 Pro
+SAFETY_SETTINGS = {
+    HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+    HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+    HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+    HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+}
 
 # Configure Google Gemini
 API_KEY = os.getenv("GEMINI_API_KEY")
 if API_KEY:
     genai.configure(api_key=API_KEY)
-    model = genai.GenerativeModel('gemini-1.5-pro-latest')
+    # AI Engine: Gemini 1.5 Pro Integrated Natively
+    model = genai.GenerativeModel(
+        model_name="gemini-1.5-pro",
+        safety_settings=SAFETY_SETTINGS
+    )
 else:
     model = None
 
