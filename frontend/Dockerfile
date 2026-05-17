@@ -1,5 +1,5 @@
 # Frontend Dockerfile for LexGuard X
-FROM node:18-slim AS build
+FROM node:20-slim AS build
 
 WORKDIR /app
 COPY package*.json ./
