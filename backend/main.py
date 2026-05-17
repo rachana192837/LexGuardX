@@ -28,6 +28,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+async def root():
+    """System Health Check and Welcome Message."""
+    return {
+        "status": "online",
+        "message": "LexGuard X AI Engine is live on Google Cloud!",
+        "version": "1.0.0",
+        "endpoints": ["/upload", "/simulate", "/negotiate"]
+    }
+
 security = HTTPBearer(auto_error=False)
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB Limit
 
