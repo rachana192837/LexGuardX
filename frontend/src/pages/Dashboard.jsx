@@ -167,7 +167,7 @@ export default function Dashboard() {
         }
 
         try {
-            const response = await fetch('http://127.0.0.1:8000/upload', {
+            const response = await fetch('https://lexguardx-851043397374.europe-west1.run.app/upload', {
                 method: 'POST',
                 body: formData,
                 headers: headers
@@ -175,7 +175,7 @@ export default function Dashboard() {
             if (!response.ok) throw new Error('Upload failed');
             const data = await response.json();
             setAnalyzing(false); setResult(data); addDocument(file.name, 'Analyzed');
-        } catch (err) { setError('Connection Error: Failed to reach backend at 127.0.0.1:8000. Please check your terminal.'); setAnalyzing(false); }
+        } catch (err) { setError(`Project Analysis Error: Failed to reach the LexGuard X Engine. Ensure the Cloud Run service is active.`); setAnalyzing(false); }
     };
 
     const handleDrop = (e) => { e.preventDefault(); e.stopPropagation(); handleFileUpload(e.dataTransfer.files[0]); };
