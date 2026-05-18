@@ -47,14 +47,31 @@
 
 ### Backend
 1. `cd backend`
-2. `pip install -r requirements.txt`
+2. `python -m pip install -r requirements.txt`
 3. Create `.env`: `GEMINI_API_KEY=YOUR_KEY`
-4. `uvicorn main:app --reload`
+4. `uvicorn main:app --reload --host 0.0.0.0 --port 8000`
 
 ### Frontend
 1. `cd frontend`
 2. `npm install`
-3. `npm run dev`
+3. `npm run dev` (runs on `http://localhost:5173`)
+
+### Quick Validation
+- Frontend build: `cd frontend && npm run build`
+- Backend smoke check: `cd backend && python -c "import main"`
+- Note: lint/tests currently have baseline issues in this repo state; see `CONTRIBUTING.md` for details.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome. Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) for setup, validation, and PR expectations.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License. See [`LICENSE`](LICENSE).
 
 ---
 
