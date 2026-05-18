@@ -1,19 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
 @import "tailwindcss";
 
 /* === Custom CSS in @layer base to work with Tailwind v4 === */
 @layer base {
   :root {
-    --bg-dark: #0f0f0f;
-    --bg-panel: #1a1a1a;
-    --bg-card: #1f1f1f;
-    --primary-orange: #FF8F1C;
-    --primary-orange-hover: #FF7A00;
-    --primary-orange-glow: rgba(255, 143, 28, 0.4);
-    --text-main: #FFFFFF;
-    --text-muted: #9CA3AF;
-    --text-dimmed: #6B7280;
-    --border-color: #2a2a2a;
-    --border-hover: #3a3a3a;
+    --bg-dark: #090d14;
+    --bg-panel: #111927;
+    --bg-card: #172130;
+    --primary-orange: #ff9a2f;
+    --primary-orange-hover: #ffb15c;
+    --primary-orange-glow: rgba(255, 154, 47, 0.38);
+    --text-main: #f5f7fb;
+    --text-muted: #abb7ca;
+    --text-dimmed: #7a869b;
+    --border-color: rgba(128, 153, 191, 0.2);
+    --border-hover: rgba(177, 205, 245, 0.38);
+    --accent-cyan: #58d9d0;
   }
 
   * {
@@ -26,12 +28,23 @@
   }
 
   body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Manrope', 'Segoe UI', sans-serif;
     background-color: var(--bg-dark);
+    background-image: radial-gradient(circle at 12% 8%, rgba(88, 217, 208, 0.1), transparent 30%), radial-gradient(circle at 85% 18%, rgba(255, 154, 47, 0.14), transparent 40%), linear-gradient(180deg, #090d14 0%, #070b12 100%);
     color: var(--text-main);
     overflow-x: hidden;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Space Grotesk', 'Manrope', sans-serif;
+    letter-spacing: -0.01em;
   }
 
   ::selection {
@@ -137,7 +150,7 @@
 /* === Components === */
 @layer components {
   .bg-animated-mesh {
-    background: linear-gradient(135deg, #080808 0%, #151515 25%, #201510 50%, #150f18 75%, #080808 100%);
+    background: linear-gradient(135deg, #070b12 0%, #101b2c 32%, #2c1d12 54%, #142434 72%, #080b11 100%);
     background-size: 400% 400%;
     animation: gradientShift 20s ease infinite;
     position: relative;
@@ -152,17 +165,17 @@
     color: white;
     border: none;
     padding: 0.75rem 1.5rem;
-    border-radius: 10px;
-    font-weight: 600;
+    border-radius: 12px;
+    font-weight: 700;
     font-size: 0.95rem;
     cursor: pointer;
     transition: all 0.25s ease;
-    box-shadow: 0 4px 14px rgba(255, 143, 28, 0.2);
+    box-shadow: 0 8px 24px rgba(255, 154, 47, 0.24);
   }
 
   .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(255, 143, 28, 0.35);
+    box-shadow: 0 14px 34px rgba(255, 154, 47, 0.36);
     filter: brightness(1.1);
   }
 
@@ -182,36 +195,37 @@
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    background-color: transparent;
-    color: var(--primary-orange);
-    border: 1.5px solid var(--primary-orange);
+    background: linear-gradient(160deg, rgba(14, 22, 34, 0.95), rgba(11, 17, 26, 0.92));
+    color: #ffcb95;
+    border: 1.5px solid rgba(255, 154, 47, 0.45);
     padding: 0.75rem 1.5rem;
-    border-radius: 10px;
-    font-weight: 600;
+    border-radius: 12px;
+    font-weight: 700;
     font-size: 0.95rem;
     cursor: pointer;
     transition: all 0.25s ease;
   }
 
   .btn-secondary:hover {
-    background-color: rgba(255, 143, 28, 0.08);
-    box-shadow: 0 0 16px rgba(255, 143, 28, 0.2);
+    background-color: rgba(255, 154, 47, 0.08);
+    box-shadow: 0 0 0 1px rgba(255, 154, 47, 0.14), 0 10px 24px rgba(255, 154, 47, 0.1);
     transform: translateY(-1px);
   }
 
   .glass-panel {
-    background: rgba(26, 26, 26, 0.65);
+    background: linear-gradient(155deg, rgba(18, 27, 40, 0.8), rgba(12, 19, 31, 0.7));
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--border-color);
-    border-radius: 14px;
+    border-radius: 16px;
     transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 16px 36px rgba(1, 8, 20, 0.38);
   }
 
   .glass-panel:hover {
     border-color: var(--border-hover);
-    background: rgba(26, 26, 26, 0.8);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(155deg, rgba(22, 32, 48, 0.92), rgba(12, 20, 33, 0.84));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 18px 40px rgba(0, 0, 0, 0.35);
   }
 
   .card-hover {
@@ -226,10 +240,10 @@
   .input-field {
     width: 100%;
     background: var(--bg-card);
-    border: 1.5px solid var(--border-color);
+    border: 1.5px solid rgba(136, 163, 198, 0.26);
     color: var(--text-main);
     padding: 0.75rem 1rem;
-    border-radius: 10px;
+    border-radius: 12px;
     outline: none;
     font-size: 0.95rem;
     transition: border-color 0.25s ease, box-shadow 0.25s ease;
@@ -237,7 +251,7 @@
 
   .input-field:focus {
     border-color: var(--primary-orange);
-    box-shadow: 0 0 0 3px rgba(255, 143, 28, 0.1);
+    box-shadow: 0 0 0 3px rgba(255, 154, 47, 0.12);
   }
 
   .input-field::placeholder {

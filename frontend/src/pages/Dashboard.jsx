@@ -105,6 +105,7 @@ export default function Dashboard() {
     const fileInputRef = useRef(null);
     const [userInfo, setUserInfo] = useState({ name: 'User', email: '', picture: null, initial: 'U' });
     const [imgError, setImgError] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     useEffect(() => {
         setIsVisible(true);
@@ -189,28 +190,26 @@ export default function Dashboard() {
         { name: 'Settings', icon: <Settings size={20} /> },
     ];
 
-    // ─── Persona Color Helper ───
-    const pColor = (persona) => {
-        const p = PERSONAS.find(x => x.id === persona);
-        const map = { blue: '#3B82F6', purple: '#A855F7', green: '#22C55E', orange: '#FF8F1C' };
-        return map[p?.color] || '#FF8F1C';
+    const selectTab = (tabName) => {
+        setActiveTab(tabName);
+        setMobileMenuOpen(false);
     };
 
     // ─── Persona Selector Bar ───
     const PersonaBar = () => (
-        <div className="glass-panel border border-[#2a2a2a] p-2 mb-6">
-            <div className="flex items-center gap-2">
+        <div className="glass-panel p-2.5 mb-6">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1">
                 {PERSONAS.map((p) => (
                     <button
                         key={p.id}
                         onClick={() => setSelectedPersona(p.id)}
-                        className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${selectedPersona === p.id
-                            ? 'bg-[#FF8F1C]/15 text-[#FF8F1C] border border-[#FF8F1C]/40 shadow-lg shadow-[#FF8F1C]/10'
-                            : 'text-[#9CA3AF] hover:text-white hover:bg-[#2a2a2a] border border-transparent'
+                        className={`min-w-[150px] md:min-w-0 flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${selectedPersona === p.id
+                            ? 'bg-[#FF9A2F]/18 text-[#FFD1A2] border border-[#FF9A2F]/45 shadow-lg shadow-[#FF9A2F]/15'
+                            : 'text-[#AAB7CA] hover:text-white hover:bg-[#182234] border border-transparent'
                             }`}
                     >
                         <span className="text-lg">{p.emoji}</span>
-                        <span className="hidden md:inline">{p.label}</span>
+                        <span>{p.label}</span>
                     </button>
                 ))}
             </div>
@@ -402,8 +401,8 @@ export default function Dashboard() {
                         </div>
 
                         {/* AI Debate — driven by persona */}
-                        <div className="glass-panel p-6 border border-purple-500/30 flex flex-col bg-gradient-to-br from-purple-500/5 to-transparent">
-                            <h3 className="font-bold text-lg mb-5 text-purple-400 flex items-center space-x-2 border-b border-purple-500/20 pb-4">
+                        <div className="glass-panel p-6 border border-cyan-400/25 flex flex-col bg-gradient-to-br from-cyan-400/8 to-transparent">
+                            <h3 className="font-bold text-lg mb-5 text-cyan-300 flex items-center space-x-2 border-b border-cyan-400/20 pb-4">
                                 <Brain size={20} /><span>AI Debate</span>
                             </h3>
                             <div className="space-y-3 flex-1 text-sm">
@@ -431,16 +430,16 @@ export default function Dashboard() {
     const renderDebateModal = () => (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setShowDebate(false)}>
             <div className="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
-            <div className="relative bg-[#151515] border border-[#2a2a2a] rounded-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden animate-fade-in-scale" onClick={e => e.stopPropagation()}>
-                <div className="flex items-center justify-between px-8 py-5 border-b border-[#2a2a2a]">
+            <div className="relative bg-[#101927] border border-[#2a3950] rounded-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden animate-fade-in-scale" onClick={e => e.stopPropagation()}>
+                <div className="flex items-center justify-between px-8 py-5 border-b border-[#2a3950]">
                     <div className="flex items-center space-x-3">
-                        <Brain size={24} className="text-purple-400" />
+                        <Brain size={24} className="text-cyan-300" />
                         <div>
                             <h2 className="text-xl font-bold text-white">Full AI Debate — {selectedPersona} Perspective</h2>
-                            <p className="text-xs text-[#9CA3AF] mt-0.5">{personaData.rounds.length} debate rounds analyzed</p>
+                            <p className="text-xs text-[#AAB7CA] mt-0.5">{personaData.rounds.length} debate rounds analyzed</p>
                         </div>
                     </div>
-                    <button onClick={() => setShowDebate(false)} className="text-[#9CA3AF] hover:text-white p-2 hover:bg-[#2a2a2a] rounded-lg transition-colors"><X size={20} /></button>
+                    <button onClick={() => setShowDebate(false)} className="text-[#AAB7CA] hover:text-white p-2 hover:bg-[#172437] rounded-lg transition-colors"><X size={20} /></button>
                 </div>
                 <div className="overflow-y-auto max-h-[calc(85vh-76px)] p-8 space-y-8">
                     {personaData.rounds.map((round, i) => (
@@ -459,11 +458,11 @@ export default function Dashboard() {
                                     <p className="text-[#d4d4d4] text-sm leading-relaxed">{round.defense}</p>
                                 </div>
                             </div>
-                            <div className="rounded-xl p-5" style={{ background: 'rgba(168,85,247,0.05)', border: '1px solid rgba(168,85,247,0.2)' }}>
-                                <strong className="text-purple-400 text-sm flex items-center space-x-2 mb-3"><span>⚖️</span><span>Judge Verdict</span></strong>
+                            <div className="rounded-xl p-5" style={{ background: 'rgba(88,217,208,0.07)', border: '1px solid rgba(88,217,208,0.3)' }}>
+                                <strong className="text-cyan-300 text-sm flex items-center space-x-2 mb-3"><span>⚖️</span><span>Judge Verdict</span></strong>
                                 <p className="text-white text-sm leading-relaxed">{round.verdict}</p>
                             </div>
-                            {i < personaData.rounds.length - 1 && <div className="border-t border-[#2a2a2a]"></div>}
+                            {i < personaData.rounds.length - 1 && <div className="border-t border-[#2a3950]"></div>}
                         </div>
                     ))}
                 </div>
@@ -472,38 +471,75 @@ export default function Dashboard() {
     );
 
     return (
-        <div className="flex h-screen bg-[#0f0f0f] font-sans overflow-hidden">
-            {/* Sidebar */}
-            <aside className={`${sidebarOpen ? 'w-72' : 'w-20'} bg-[#1a1a1a] border-r border-[#2a2a2a] flex flex-col transition-all duration-300 z-10`}>
-                <div className="p-6 flex items-center justify-between border-b border-[#2a2a2a]">
-                    {sidebarOpen && <div className="flex items-center space-x-2.5 cursor-pointer"><Shield className="text-[#FF8F1C]" size={28} /><span className="text-xl font-bold">LexGuard<span className="text-[#9CA3AF] font-light">X</span></span></div>}
-                    <button onClick={() => setSidebarOpen(!sidebarOpen)} aria-label="Toggle Sidebar Navigation" aria-expanded={sidebarOpen} className="text-[#9CA3AF] hover:text-white p-2 hover:bg-[#2a2a2a] rounded-lg transition-colors"><Menu size={20} aria-hidden="true" /></button>
+        <div className="relative flex h-screen overflow-hidden bg-[#070b12] text-white">
+            <div className="pointer-events-none absolute -top-32 right-12 h-72 w-72 rounded-full bg-[#FF9A2F]/15 blur-3xl" />
+            <div className="pointer-events-none absolute bottom-0 left-0 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
+
+            {/* Desktop Sidebar */}
+            <aside className={`${sidebarOpen ? 'w-72' : 'w-20'} hidden md:flex bg-[#101927]/90 border-r border-[#2a3950] flex-col transition-all duration-300 z-10`}>
+                <div className="p-6 flex items-center justify-between border-b border-[#2a3950]">
+                    {sidebarOpen && <div className="flex items-center space-x-2.5 cursor-pointer"><Shield className="text-[#FF9A2F]" size={28} /><span className="text-xl font-bold">LexGuard<span className="text-[#AAB7CA] font-light">X</span></span></div>}
+                    <button onClick={() => setSidebarOpen(!sidebarOpen)} aria-label="Toggle Sidebar Navigation" aria-expanded={sidebarOpen} className="text-[#AAB7CA] hover:text-white p-2 hover:bg-[#172437] rounded-lg transition-colors"><Menu size={20} aria-hidden="true" /></button>
                 </div>
-                <div className={`px-4 py-3 text-xs text-[#6B7280] font-semibold tracking-wider mt-6 ${!sidebarOpen && 'hidden'}`}>NAVIGATION</div>
+                <div className={`px-4 py-3 text-xs text-[#7A869B] font-semibold tracking-wider mt-6 ${!sidebarOpen && 'hidden'}`}>NAVIGATION</div>
                 <nav className="flex-1 px-3 space-y-1.5 mt-2" aria-label="Main Navigation">
                     {navItems.map(item => (
-                        <div key={item.name} onClick={() => setActiveTab(item.name)}
-                            className={`flex items-center space-x-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 ${item.name === activeTab ? 'bg-[#FF8F1C]/15 text-[#FF8F1C] border border-[#FF8F1C]/30' : 'text-[#9CA3AF] hover:text-white hover:bg-[#2a2a2a] border border-transparent'}`} title={item.name}>
+                        <div key={item.name} onClick={() => selectTab(item.name)}
+                            className={`flex items-center space-x-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 ${item.name === activeTab ? 'bg-[#FF9A2F]/18 text-[#FFD1A2] border border-[#FF9A2F]/35' : 'text-[#AAB7CA] hover:text-white hover:bg-[#172437] border border-transparent'}`} title={item.name}>
                             {item.icon}
                             {sidebarOpen && <span className="font-semibold text-sm">{item.name}</span>}
                         </div>
                     ))}
                 </nav>
-                <div className="border-t border-[#2a2a2a] p-3">
-                    <button onClick={handleLogout} aria-label="Log Out of LexGuard X" className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-[#9CA3AF] hover:text-red-400 hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/20" title="Logout">
+                <div className="border-t border-[#2a3950] p-3">
+                    <button onClick={handleLogout} aria-label="Log Out of LexGuard X" className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-[#AAB7CA] hover:text-red-300 hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/20" title="Logout">
                         <LogOut size={20} aria-hidden="true" />{sidebarOpen && <span className="font-semibold text-sm">Logout</span>}
                     </button>
                 </div>
             </aside>
 
+            {/* Mobile Drawer */}
+            {mobileMenuOpen && (
+                <div className="fixed inset-0 z-40 md:hidden" onClick={() => setMobileMenuOpen(false)}>
+                    <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+                    <aside className="absolute left-0 top-0 h-full w-72 bg-[#101927] border-r border-[#2a3950] p-4" onClick={(e) => e.stopPropagation()}>
+                        <div className="mb-5 flex items-center justify-between">
+                            <div className="flex items-center space-x-2.5"><Shield className="text-[#FF9A2F]" size={26} /><span className="text-lg font-bold">LexGuard<span className="text-[#AAB7CA] font-light">X</span></span></div>
+                            <button onClick={() => setMobileMenuOpen(false)} className="text-[#AAB7CA] hover:text-white"><X size={20} /></button>
+                        </div>
+                        <nav className="space-y-1.5">
+                            {navItems.map(item => (
+                                <button key={item.name} type="button" onClick={() => selectTab(item.name)}
+                                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${item.name === activeTab ? 'bg-[#FF9A2F]/18 text-[#FFD1A2] border border-[#FF9A2F]/35' : 'text-[#AAB7CA] hover:text-white hover:bg-[#172437] border border-transparent'}`}>
+                                    {item.icon}
+                                    <span className="font-semibold text-sm">{item.name}</span>
+                                </button>
+                            ))}
+                        </nav>
+                        <button onClick={handleLogout} className="mt-6 w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-[#AAB7CA] hover:text-red-300 hover:bg-red-500/10 border border-[#2a3950]">
+                            <LogOut size={18} />
+                            <span className="font-semibold text-sm">Logout</span>
+                        </button>
+                    </aside>
+                </div>
+            )}
+
             {/* Main */}
-            <div className="flex-1 flex flex-col overflow-hidden">
-                <header className="h-16 bg-[#1a1a1a] border-b border-[#2a2a2a] flex items-center justify-between px-8">
-                    <div className="flex-1 max-w-xl"><div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]" size={18} aria-hidden="true" /><input type="text" placeholder="Search..." aria-label="Search through documents and features" className="w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-xl pl-10 pr-4 py-2.5 text-sm text-white outline-none focus:border-[#FF8F1C] transition-colors" /></div></div>
+            <div className="relative z-10 flex-1 flex flex-col overflow-hidden">
+                <header className="h-20 bg-[#101927]/80 backdrop-blur-xl border-b border-[#2a3950] flex items-center justify-between px-4 md:px-8">
+                    <div className="flex items-center gap-3 flex-1 max-w-2xl">
+                        <button onClick={() => setMobileMenuOpen(true)} className="md:hidden text-[#AAB7CA] hover:text-white p-2 rounded-lg hover:bg-[#172437]" aria-label="Open navigation menu">
+                            <Menu size={20} />
+                        </button>
+                        <div className="relative w-full">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7A869B]" size={18} aria-hidden="true" />
+                            <input type="text" placeholder="Search documents, findings, clauses..." aria-label="Search through documents and features" className="w-full bg-[#0D1421] border border-[#2a3950] rounded-xl pl-10 pr-4 py-2.5 text-sm text-white outline-none focus:border-[#FF9A2F] transition-colors" />
+                        </div>
+                    </div>
                     <div className="flex items-center space-x-4 ml-4">
                         <div className="text-right text-sm hidden md:block">
                             <div className="font-semibold text-white">{userInfo.name}</div>
-                            <div className="text-xs text-[#6B7280]">{userInfo.email || 'Legal Professional'}</div>
+                            <div className="text-xs text-[#7A869B]">{userInfo.email || 'Legal Professional'}</div>
                         </div>
                         {userInfo.picture && !imgError ? (
                             <img
@@ -511,16 +547,23 @@ export default function Dashboard() {
                                 alt={userInfo.name}
                                 referrerPolicy="no-referrer"
                                 onError={() => setImgError(true)}
-                                className="w-10 h-10 rounded-xl object-cover border border-[#2a2a2a]"
+                                className="w-10 h-10 rounded-xl object-cover border border-[#2a3950]"
                             />
                         ) : (
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF8F1C] to-[#FF7A00] flex items-center justify-center font-bold text-white">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF9A2F] to-[#FF7A00] flex items-center justify-center font-bold text-white">
                                 {userInfo.initial}
                             </div>
                         )}
                     </div>
                 </header>
-                <main className="flex-1 overflow-auto p-8 bg-[#0f0f0f]">{renderContent()}</main>
+                <main className="flex-1 overflow-auto px-4 py-5 md:p-8 bg-transparent">
+                    <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="glass-panel p-4 border border-[#2a3950]"><p className="text-xs uppercase tracking-wider text-[#7A869B] mb-1">Persona Mode</p><p className="text-lg font-bold text-[#FFD1A2]">{selectedPersona}</p></div>
+                        <div className="glass-panel p-4 border border-[#2a3950]"><p className="text-xs uppercase tracking-wider text-[#7A869B] mb-1">Documents Analyzed</p><p className="text-lg font-bold text-white">{documents.length}</p></div>
+                        <div className="glass-panel p-4 border border-[#2a3950]"><p className="text-xs uppercase tracking-wider text-[#7A869B] mb-1">Audit Entries</p><p className="text-lg font-bold text-cyan-300">{auditLogs.length}</p></div>
+                    </div>
+                    {renderContent()}
+                </main>
             </div>
 
             {showDebate && renderDebateModal()}
