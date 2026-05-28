@@ -1,4 +1,7 @@
 import os
+import io
+import fitz
+import mammoth
 from dotenv import load_dotenv
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Depends
 from fastapi.security import HTTPBearer
@@ -99,6 +102,7 @@ async def compare_files(
 ):
     """Parse two contract files and return their sentences for diff comparison."""
     import re
+    import io
     
     # Validate file types
     allowed_exts = (".pdf", ".docx")
@@ -110,20 +114,25 @@ async def compare_files(
                 detail=f"Invalid file type for {f.filename}. Only PDF and DOCX files are supported."
             )
 
-    # Validate file sizes
-    for f in [original_file, revised_file]:
-        content = await f.read()
-        if len(content) > MAX_FILE_SIZE:
-            raise HTTPException(
-                status_code=413,
-                detail=f"File {f.filename} exceeds 10MB limit."
-            )
-        await f.seek(0)
+    # Read files once and validate sizes
+    original_content = await original_file.read()
+    revised_content = await revised_file.read()
+    
+    if len(original_content) > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=413,
+            detail=f"File {original_file.filename} exceeds 10MB limit."
+        )
+    if len(revised_content) > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=413,
+            detail=f"File {revised_file.filename} exceeds 10MB limit."
+        )
 
-    # Parse both files
+    # Parse both files from content
     try:
-        original_text = await parse_document(original_file)
-        revised_text = await parse_document(revised_file)
+        original_text = _parse_content(original_content, original_file.filename)
+        revised_text = _parse_content(revised_content, revised_file.filename)
     except Exception as e:
         raise HTTPException(
             status_code=422,
@@ -141,6 +150,23 @@ async def compare_files(
         original=split_sentences(original_text),
         revised=split_sentences(revised_text)
     )
+
+
+def _parse_content(content: bytes, filename: str) -> str:
+    """Parse file content from bytes based on filename extension."""
+    fname = (filename or "").lower()
+    if fname.endswith(".pdf"):
+        doc = fitz.open(stream=content, filetype="pdf")
+        text = ""
+        for page in doc:
+            text += page.get_text()
+        doc.close()
+        return text.strip()
+    elif fname.endswith(".docx"):
+        result = mammoth.extract_raw_text(io.BytesIO(content))
+        return result.value.strip()
+    else:
+        return content.decode("utf-8", errors="ignore").strip()
 
 
 @app.post("/compare/analyze", response_model=list[RiskAnalysisItem])
