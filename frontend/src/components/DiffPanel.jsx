@@ -1,3 +1,4 @@
+import { diffWords } from "diff";
 import RiskBadge from "./RiskBadge";
 
 export default function DiffPanel({ original, revised, riskAnalysis }) {
@@ -32,7 +33,15 @@ export default function DiffPanel({ original, revised, riskAnalysis }) {
                     : "text-white/70"
                 }`}
               >
-                {pair.originalText}
+                {pair.status === "modified" ? (
+                  <ModifiedText
+                    oldText={pair.originalText}
+                    newText={pair.revisedText}
+                    side="old"
+                  />
+                ) : (
+                  pair.originalText
+                )}
                 {risk && (
                   <span className="ml-2">
                     <RiskBadge level={risk.risk_level} />
@@ -63,7 +72,15 @@ export default function DiffPanel({ original, revised, riskAnalysis }) {
                     : "text-white/70"
                 }`}
               >
-                {pair.revisedText}
+                {pair.status === "modified" ? (
+                  <ModifiedText
+                    oldText={pair.originalText}
+                    newText={pair.revisedText}
+                    side="new"
+                  />
+                ) : (
+                  pair.revisedText
+                )}
                 {risk && (
                   <span className="ml-2">
                     <RiskBadge level={risk.risk_level} />
@@ -75,6 +92,35 @@ export default function DiffPanel({ original, revised, riskAnalysis }) {
         </div>
       </div>
     </div>
+  );
+}
+
+function ModifiedText({ oldText, newText, side }) {
+  const text = side === "old" ? oldText : newText;
+  const otherText = side === "old" ? newText : oldText;
+  const diff = diffWords(otherText, text);
+
+  return (
+    <span>
+      {diff.map((part, i) => {
+        if (side === "old" && part.added) return null;
+        if (side === "new" && part.removed) return null;
+        return (
+          <span
+            key={i}
+            className={
+              part.added
+                ? "bg-emerald-500/30 px-0.5 rounded"
+                : part.removed
+                ? "bg-red-500/30 px-0.5 rounded line-through"
+                : ""
+            }
+          >
+            {part.value}
+          </span>
+        );
+      })}
+    </span>
   );
 }
 
