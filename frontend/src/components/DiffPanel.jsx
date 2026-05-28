@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { diffWords } from "diff";
 import RiskBadge from "./RiskBadge";
 
@@ -10,7 +11,7 @@ export default function DiffPanel({ original, revised, riskAnalysis }) {
   }
 
   // Build aligned pairs for side-by-side display
-  const pairs = alignSentences(original, revised);
+  const pairs = useMemo(() => alignSentences(original, revised), [original, revised]);
 
   return (
     <div className="grid grid-cols-2 gap-4">
@@ -96,9 +97,11 @@ export default function DiffPanel({ original, revised, riskAnalysis }) {
 }
 
 function ModifiedText({ oldText, newText, side }) {
-  const text = side === "old" ? oldText : newText;
-  const otherText = side === "old" ? newText : oldText;
-  const diff = diffWords(otherText, text);
+  const diff = useMemo(() => {
+    const otherText = side === "old" ? newText : oldText;
+    const text = side === "old" ? oldText : newText;
+    return diffWords(otherText, text);
+  }, [oldText, newText, side]);
 
   return (
     <span>
