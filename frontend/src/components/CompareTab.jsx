@@ -1,9 +1,74 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Upload, ArrowLeftRight, FileText, Loader2, X, RotateCcw } from "lucide-react";
 import DiffPanel from "./DiffPanel";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+function UploadZone({ label, file, onFileSelect, disabled }) {
+  const inputRef = useRef(null);
+
+  const handleClick = () => {
+    if (!disabled && inputRef.current) {
+      inputRef.current.click();
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleClick();
+    }
+  };
+
+  const handleChange = (e) => {
+    const selected = e.target.files[0];
+    if (selected) {
+      onFileSelect(selected);
+    }
+  };
+
+  return (
+    <div className="flex-1">
+      <label className="block text-sm font-medium text-white/60 mb-2">{label}</label>
+      <div
+        role="button"
+        tabIndex={disabled ? -1 : 0}
+        aria-label={`Upload ${label} document`}
+        aria-disabled={disabled}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all outline-none ${
+          file
+            ? "border-emerald-500/50 bg-emerald-500/5"
+            : "border-white/20 hover:border-white/40 bg-white/5 focus:border-white/40 focus:bg-white/10"
+        } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+      >
+        <input
+          ref={inputRef}
+          type="file"
+          accept=".pdf,.docx"
+          className="hidden"
+          onChange={handleChange}
+          disabled={disabled}
+          aria-hidden="true"
+          tabIndex={-1}
+        />
+        {file ? (
+          <div className="flex items-center justify-center gap-2 text-emerald-400">
+            <FileText size={20} aria-hidden="true" />
+            <span className="text-sm truncate max-w-[200px]">{file.name}</span>
+          </div>
+        ) : (
+          <div className="text-white/40">
+            <Upload size={24} className="mx-auto mb-2" aria-hidden="true" />
+            <p className="text-sm">Drop PDF or DOCX here</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function CompareTab() {
   const [originalFile, setOriginalFile] = useState(null);
@@ -39,7 +104,7 @@ export default function CompareTab() {
     setIdentical(false);
   };
 
-  const validateFile = (file) => {
+  const validateFile = useCallback((file) => {
     if (file.size > MAX_FILE_SIZE) {
       setError(`File "${file.name}" exceeds 10MB limit.`);
       return false;
@@ -50,7 +115,17 @@ export default function CompareTab() {
       return false;
     }
     return true;
-  };
+  }, []);
+
+  const handleOriginalFileSelect = useCallback((file) => {
+    setError(null);
+    setOriginalFile(file);
+  }, []);
+
+  const handleRevisedFileSelect = useCallback((file) => {
+    setError(null);
+    setRevisedFile(file);
+  }, []);
 
   const handleCompare = async () => {
     if (!originalFile || !revisedFile) return;
@@ -60,7 +135,6 @@ export default function CompareTab() {
     setRiskAnalysis([]);
     setIdentical(false);
 
-    // Validate files before upload
     if (!validateFile(originalFile) || !validateFile(revisedFile)) {
       setLoading(false);
       return;
@@ -85,14 +159,12 @@ export default function CompareTab() {
       setOriginalSentences(data.original);
       setRevisedSentences(data.revised);
 
-      // Check if documents are identical
       if (JSON.stringify(data.original) === JSON.stringify(data.revised)) {
         setIdentical(true);
         setLoading(false);
         return;
       }
 
-      // Start risk analysis in background
       setAnalyzing(true);
       fetch(`${API_BASE}/compare/analyze`, {
         method: "POST",
@@ -112,45 +184,11 @@ export default function CompareTab() {
     }
   };
 
-  const renderUploadZone = (label, file, setFile, disabled) => (
-    <div className="flex-1">
-      <label className="block text-sm font-medium text-white/60 mb-2">{label}</label>
-      <div
-        className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all ${
-          file
-            ? "border-emerald-500/50 bg-emerald-500/5"
-            : "border-white/20 hover:border-white/40 bg-white/5"
-        } ${disabled ? "opacity-50" : "cursor-pointer hover:bg-white/10"}`}
-        onClick={() => !disabled && document.getElementById(`file-${label}`).click()}
-      >
-        <input
-          id={`file-${label}`}
-          type="file"
-          accept=".pdf,.docx"
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files[0];
-            if (file) {
-              setError(null);
-              setFile(file);
-            }
-          }}
-          disabled={disabled}
-        />
-        {file ? (
-          <div className="flex items-center justify-center gap-2 text-emerald-400">
-            <FileText size={20} />
-            <span className="text-sm truncate max-w-[200px]">{file.name}</span>
-          </div>
-        ) : (
-          <div className="text-white/40">
-            <Upload size={24} className="mx-auto mb-2" />
-            <p className="text-sm">Drop PDF or DOCX here</p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleCompare();
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -158,8 +196,8 @@ export default function CompareTab() {
         <div className="flex items-center gap-3">
           <h2 className="text-xl font-bold text-white">Contract Comparison</h2>
           {analyzing && (
-            <span className="flex items-center gap-1 text-xs text-cyan-400">
-              <Loader2 size={12} className="animate-spin" />
+            <span role="status" className="flex items-center gap-1 text-xs text-cyan-400">
+              <Loader2 size={12} className="animate-spin" aria-hidden="true" />
               Analyzing risks...
             </span>
           )}
@@ -167,41 +205,54 @@ export default function CompareTab() {
         {(originalFile || revisedFile || originalSentences.length > 0) && (
           <button
             onClick={handleClear}
+            aria-label="Clear all files and results"
             className="flex items-center gap-2 px-3 py-1.5 text-sm text-white/60 hover:text-white bg-white/10 hover:bg-white/20 rounded-lg transition-all"
           >
-            <RotateCcw size={14} />
+            <RotateCcw size={14} aria-hidden="true" />
             Clear
           </button>
         )}
       </div>
 
       {/* Upload Section */}
-      <div className="flex items-end gap-4">
-        {renderUploadZone("Original", swapped ? revisedFile : originalFile, setOriginalFile, loading)}
+      <div className="flex flex-col sm:flex-row items-end gap-4">
+        <UploadZone
+          label="Original"
+          file={swapped ? revisedFile : originalFile}
+          onFileSelect={handleOriginalFileSelect}
+          disabled={loading}
+        />
         <button
           onClick={handleSwap}
-          className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition-all mb-7"
-          title="Swap files"
+          aria-label="Swap original and revised files"
+          className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition-all sm:mb-7"
         >
-          <ArrowLeftRight size={20} />
+          <ArrowLeftRight size={20} aria-hidden="true" />
         </button>
-        {renderUploadZone("Revised", swapped ? originalFile : revisedFile, setRevisedFile, loading)}
+        <UploadZone
+          label="Revised"
+          file={swapped ? originalFile : revisedFile}
+          onFileSelect={handleRevisedFileSelect}
+          disabled={loading}
+        />
       </div>
 
       {/* Compare Button */}
       <div className="flex justify-center">
         <button
           onClick={handleCompare}
+          onKeyDown={handleKeyDown}
           disabled={!originalFile || !revisedFile || loading}
+          aria-label="Compare the two uploaded contracts"
           className={`px-8 py-3 rounded-xl font-semibold transition-all ${
             originalFile && revisedFile && !loading
-              ? "bg-gradient-to-r from-cyan-500 to-violet-500 text-white hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/25"
+              ? "bg-cyan-600 hover:bg-cyan-500 text-white hover:shadow-lg hover:shadow-cyan-500/25"
               : "bg-white/10 text-white/30 cursor-not-allowed"
           }`}
         >
           {loading ? (
             <span className="flex items-center gap-2">
-              <Loader2 size={16} className="animate-spin" />
+              <Loader2 size={16} className="animate-spin" aria-hidden="true" />
               Comparing...
             </span>
           ) : (
@@ -212,20 +263,20 @@ export default function CompareTab() {
 
       {/* Error */}
       {error && (
-        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm flex items-center justify-between">
+        <div role="alert" className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <X size={16} />
+            <X size={16} aria-hidden="true" />
             <span>{error}</span>
           </div>
-          <button onClick={() => setError(null)} className="text-red-400 hover:text-red-300">
-            <X size={16} />
+          <button onClick={() => setError(null)} aria-label="Dismiss error" className="text-red-400 hover:text-red-300">
+            <X size={16} aria-hidden="true" />
           </button>
         </div>
       )}
 
       {/* Identical Documents */}
       {identical && (
-        <div className="p-6 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-center">
+        <div role="status" className="p-6 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-center">
           <p className="text-emerald-400 font-medium">Documents are identical</p>
           <p className="text-emerald-400/60 text-sm mt-1">No differences found between the two versions.</p>
         </div>
@@ -233,7 +284,7 @@ export default function CompareTab() {
 
       {/* Empty Documents Warning */}
       {originalSentences.length === 0 && revisedSentences.length === 0 && !loading && !identical && (
-        <div className="p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-sm text-center">
+        <div role="status" className="p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-sm text-center">
           No text could be extracted from one or both documents.
         </div>
       )}
