@@ -6,7 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from parsers import parse_document
 from google.oauth2 import id_token
 from google.auth.transport.requests import Request as GoogleRequest
-from agents import run_analysis_pipeline, simulate_scenario, suggest_negotiation
+from agents import run_analysis_pipeline, simulate_scenario, suggest_negotiation, analyze_comparison
+from models import ComparisonResponse, ComparisonAnalyzeRequest, RiskAnalysisItem
 
 # Load environment variables securely
 load_dotenv()
@@ -89,6 +90,64 @@ async def simulate_scenario_endpoint(clause: str = Form(...)):
 async def negotiate_endpoint(clause: str = Form(...)):
     """Trigger Agent 6: Async negotiation suggestions."""
     return await suggest_negotiation(clause)
+
+
+@app.post("/compare", response_model=ComparisonResponse)
+async def compare_files(
+    original_file: UploadFile = File(...),
+    revised_file: UploadFile = File(...),
+):
+    """Parse two contract files and return their sentences for diff comparison."""
+    import re
+    
+    # Validate file types
+    allowed_exts = (".pdf", ".docx")
+    for f in [original_file, revised_file]:
+        fname = (f.filename or "").lower()
+        if not any(fname.endswith(ext) for ext in allowed_exts):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid file type for {f.filename}. Only PDF and DOCX files are supported."
+            )
+
+    # Validate file sizes
+    for f in [original_file, revised_file]:
+        content = await f.read()
+        if len(content) > MAX_FILE_SIZE:
+            raise HTTPException(
+                status_code=413,
+                detail=f"File {f.filename} exceeds 10MB limit."
+            )
+        await f.seek(0)
+
+    # Parse both files
+    try:
+        original_text = await parse_document(original_file)
+        revised_text = await parse_document(revised_file)
+    except Exception as e:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Could not parse file. It may be corrupted or password-protected: {str(e)[:200]}"
+        )
+
+    # Split into sentences
+    def split_sentences(text: str) -> list:
+        if not text.strip():
+            return []
+        sentences = re.split(r'(?<=[.!?])\s+', text)
+        return [s.strip() for s in sentences if s.strip()]
+
+    return ComparisonResponse(
+        original=split_sentences(original_text),
+        revised=split_sentences(revised_text)
+    )
+
+
+@app.post("/compare/analyze", response_model=list[RiskAnalysisItem])
+async def compare_analyze(request: ComparisonAnalyzeRequest):
+    """Analyze risk differences between two contract versions."""
+    items = await analyze_comparison(request.original, request.revised)
+    return [RiskAnalysisItem(**item) for item in items]
 
 if __name__ == "__main__":
     import uvicorn

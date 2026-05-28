@@ -160,3 +160,64 @@ async def suggest_negotiation(clause: str) -> dict:
         return json.loads(response.text)
     except Exception:
         return {"original_clause": clause, "suggested_clause": "Error", "rationale": "Could not contact AI."}
+
+
+async def analyze_comparison(original: list, revised: list) -> list:
+    """Analyze differences between two contract versions and return risk items."""
+    if model is None:
+        return [
+            {
+                "clause_id": "mock-1",
+                "change_type": "modified",
+                "risk_level": "moderate",
+                "summary": "Mock analysis: AI key not configured"
+            }
+        ]
+
+    original_text = "\n".join(original)
+    revised_text = "\n".join(revised)
+
+    prompt = f"""You are a legal contract analyst. Compare these two versions of a contract.
+
+ORIGINAL VERSION:
+{original_text}
+
+REVISED VERSION:
+{revised_text}
+
+For each meaningful difference, return a JSON array of objects with these fields:
+- clause_id: string identifying the changed clause (e.g., "sentence-3")
+- change_type: "added", "removed", or "modified"
+- risk_level: "critical", "high", "moderate", or "low"
+- summary: one-sentence explanation of what changed and why it matters legally
+
+Focus on substantive legal changes, not cosmetic formatting. If versions are identical, return an empty array.
+
+Return ONLY the JSON array, no other text."""
+
+    try:
+        loop = asyncio.get_event_loop()
+        response = await loop.run_in_executor(
+            None,
+            lambda: model.generate_content(
+                prompt,
+                safety_settings=SAFETY_SETTINGS,
+                generation_config=genai.GenerationConfig(
+                    response_mime_type="application/json"
+                )
+            )
+        )
+        items = json.loads(response.text)
+        if not isinstance(items, list):
+            items = [items]
+        return items
+    except Exception as e:
+        print(f"Comparison analysis error: {e}")
+        return [
+            {
+                "clause_id": "error-1",
+                "change_type": "modified",
+                "risk_level": "moderate",
+                "summary": f"Analysis temporarily unavailable: {str(e)[:100]}"
+            }
+        ]

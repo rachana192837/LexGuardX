@@ -19,3 +19,20 @@ class DocumentAnalysisResponse(BaseModel):
     risk_scores: List[RiskScore]
     problematic_clauses: List[ClauseHighlight]
     negotiation_suggestions: Optional[List[str]] = None
+
+
+class ComparisonResponse(BaseModel):
+    original: List[str]
+    revised: List[str]
+
+
+class RiskAnalysisItem(BaseModel):
+    clause_id: str
+    change_type: str  # "added", "removed", "modified"
+    risk_level: str   # "critical", "high", "moderate", "low"
+    summary: str
+
+
+class ComparisonAnalyzeRequest(BaseModel):
+    original: List[str]
+    revised: List[str]
