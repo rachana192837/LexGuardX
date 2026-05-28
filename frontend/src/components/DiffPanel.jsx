@@ -14,7 +14,7 @@ export default function DiffPanel({ original, revised, riskAnalysis }) {
   const pairs = useMemo(() => alignSentences(original, revised), [original, revised]);
 
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {/* Original Panel */}
       <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-4 overflow-y-auto max-h-[600px]">
         <h3 className="text-sm font-semibold text-white/60 mb-3 uppercase tracking-wider">
