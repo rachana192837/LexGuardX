@@ -1,6 +1,7 @@
 fastapi
 uvicorn[standard]
 pymupdf
+mammoth
 python-multipart
 pydantic
 google-generativeai

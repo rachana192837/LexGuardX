@@ -1,32 +1,37 @@
 import fitz  # PyMuPDF
+import mammoth
 import io
 from fastapi import UploadFile
+
+
+def _parse_pdf(content: bytes) -> str:
+    doc = fitz.open(stream=content, filetype="pdf")
+    text = ""
+    for page in doc:
+        text += page.get_text()
+    doc.close()
+    return text.strip()
+
+
+def _parse_docx(content: bytes) -> str:
+    result = mammoth.extract_raw_text(io.BytesIO(content))
+    return result.value.strip()
+
+
+def _parse_text(content: bytes) -> str:
+    return content.decode("utf-8", errors="ignore").strip()
+
 
 async def parse_document(file: UploadFile) -> str:
     """
     Extracts raw text from uploaded PDF or DOCX documents.
     """
-    text = ""
     content = await file.read()
-    
-    if file.filename.endswith(".pdf"):
-        doc = fitz.open(stream=content, filetype="pdf")
-        try:
-            for page in doc:
-                text += page.get_text()
-        finally:
-            doc.close()  # Critical for Memory Efficiency / Resource Handling
-    elif file.filename.endswith(".docx"):
-        # For a hackathon, we could use python-docx. PyMuPDF handles some XPS/DOCX but we'll stick to a simple fallback.
-        # To save time, we will assume PDF for the demo or use python-docx.
-        # Alternatively, we just use fitz if it supports it in this version, or fallback to returning text for testing.
-        try:
-            import docx
-            doc = docx.Document(io.BytesIO(content))
-            text = "\n".join([para.text for para in doc.paragraphs])
-        except ImportError:
-            text = "DOCX extraction requires python-docx. Assuming raw string for now."
+    filename = file.filename or ""
+
+    if filename.lower().endswith(".pdf"):
+        return _parse_pdf(content)
+    elif filename.lower().endswith(".docx"):
+        return _parse_docx(content)
     else:
-        text = content.decode("utf-8", errors="ignore")
-        
-    return text.strip()
+        return _parse_text(content)
