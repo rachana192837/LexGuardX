@@ -1,85 +1,88 @@
-# LexGuard X: AI-Powered Adversarial Legal Guard ⚖️🤖
+# LexGuard
 
-**LexGuard X** is a production-ready legal analysis engine built for the **Hack2Skill Hackathon**. It leverages the power of **Google Gemini 1.5 Pro** to perform adversarial contract review, simulating real-world consequences and providing strategic negotiation leverage for consumers, employees, and freelancers.
+AI-powered contract analysis platform that reviews legal documents, identifies risks, and provides negotiation recommendations.
 
----
+## Features
 
-## 🚀 Live Demo
-**Dashboard URL**: [https://lexguard-851043397374.europe-west1.run.app/](https://lexguard-851043397374.europe-west1.run.app/)
+- **Contract Analysis** — Upload a PDF or DOCX contract and receive a risk assessment with clause-by-clause breakdown
+- **Persona-Based Review** — Analyze from different perspectives: Employee, Freelancer, Small Business, Consumer
+- **Adversarial Debate** — AI agents simulate prosecution and defense arguments to expose hidden risks
+- **Document Comparison** — Side-by-side diff of two contract versions with AI-powered risk analysis
+- **Negotiation Suggestions** — Get concrete counter-proposals for problematic clauses
 
----
+## Tech Stack
 
-## ✨ Key Features
-- **Persona-Based Analysis**: Tailors legal risk assessment based on the user's role (Employee, Freelancer, Small Business, Consumer).
-- **Gemini 1.5 Pro Engine**: Leverages high-context window AI for massive document analysis and nuanced adversarial reasoning.
-- **Consequence Simulation**: Predicts "What happens if I sign?" with real-world impact scenarios.
-- **Negotiation Strategist**: Generates concrete counter-proposals and leverage points.
-- **Adversarial Debate**: Parallel AI agents simulate "Counsel vs. Corporate" debates to expose hidden traps.
+| Layer | Technology |
+|-------|------------|
+| Backend | FastAPI, Python |
+| AI | Google Gemini 1.5 Pro |
+| Frontend | React, Vite, Tailwind CSS |
+| Deployment | Google Cloud Run |
 
----
+## Project Structure
 
-## 🛠️ Tech Stack & Google Services
-- **LLM**: Google Gemini 1.5 Pro
-- **Backend**: FastAPI (Python)
-- **Frontend**: React (Vite) + Tailwind CSS
-- **Infrastructure**: 100% Google Cloud (Dual Cloud Run Services)
-- **CI/CD**: Automatic Cloud Build via GitHub Integration
-- **Security**: Google OAuth 2.0 & JWT Validation
+```
+backend/
+  main.py          # API endpoints
+  agents.py        # Gemini AI orchestration
+  parsers.py       # PDF/DOCX text extraction
+  models.py        # Pydantic schemas
+  tests/           # Backend tests
 
----
-
-## 📦 Project Structure
-```bash
-├── backend/            # FastAPI AI Engine
-│   ├── agents.py       # Gemini 1.5 Pro orchestration
-│   ├── main.py         # Secure API endpoints & JWT Auth
-│   ├── parsers.py      # PyMuPDF processing
-│   └── tests/          # Pytest suite
-├── frontend/           # React Dashboard
-│   ├── src/pages/      # Dashboard & Landing logic
-│   └── components/     # UI/UX components
-└── Dockerfile          # Root-level GCP deployment config
+frontend/
+  src/
+    pages/         # Page components
+    components/    # Reusable UI components
 ```
 
----
+## Getting Started
 
-## 🔧 Installation & Local Setup
+### Prerequisites
+
+- Python 3.10+
+- Node.js 18+
+- Google Gemini API key
 
 ### Backend
-1. `cd backend`
-2. `python -m pip install -r requirements.txt`
-3. Create `.env`: `GEMINI_API_KEY=YOUR_KEY`
-4. `uvicorn main:app --reload --host 0.0.0.0 --port 8000`
+
+```bash
+cd backend
+pip install -r requirements.txt
+
+# Create .env file
+echo "GEMINI_API_KEY=your_key_here" > .env
+
+# Start server
+uvicorn main:app --reload --port 8000
+```
 
 ### Frontend
-1. `cd frontend`
-2. `npm install`
-3. `npm run dev` (runs on `http://localhost:5173`)
 
-### Quick Validation
-- Frontend build: `cd frontend && npm run build`
-- Backend smoke check: `cd backend && python -c "import main"`
-- Note: lint/tests currently have baseline issues in this repo state; see `CONTRIBUTING.md` for details.
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
----
+The frontend runs at `http://localhost:5173` and proxies API requests to the backend on port 8000.
 
-## 🤝 Contributing
+## API Endpoints
 
-Contributions are welcome. Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) for setup, validation, and PR expectations.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/upload` | Analyze a single contract |
+| `POST` | `/compare` | Compare two contract versions |
+| `POST` | `/compare/analyze` | Get risk analysis for differences |
+| `POST` | `/simulate` | Simulate real-world consequences of a clause |
+| `POST` | `/negotiate` | Get negotiation suggestions |
 
----
+## Testing
 
-## 📄 License
+```bash
+cd backend
+python -m pytest tests/ -v
+```
 
-This project is licensed under the MIT License. See [`LICENSE`](LICENSE).
+## License
 
----
-
-## 🏆 Hack2Skill Evaluation Highlights
-- **Google Services Integration**: Native Gemini 1.5 Pro implementation and Google Cloud Run deployment.
-- **Security First**: Absolute protection of API keys via environment variables and JWT token verification.
-- **Performance**: Integrated LRU caching for hyper-fast repeated analysis.
-- **Accessibility**: Semantic HTML and modern accessible UI patterns.
-
----
-**Build with ❤️ for the Hack2Skill Community** 🥂🚀
+MIT
