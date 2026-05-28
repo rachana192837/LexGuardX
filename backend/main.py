@@ -1,10 +1,12 @@
 import os
 import io
 import re
+import time
+from collections import defaultdict
 import fitz
 import mammoth
 from dotenv import load_dotenv
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Depends
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Depends, Request
 from fastapi.security import HTTPBearer
 from fastapi.middleware.cors import CORSMiddleware
 from parsers import parse_document
@@ -32,6 +34,25 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Simple in-memory rate limiter for comparison endpoints
+# Limits: 10 requests per minute per IP
+_rate_limit_store = defaultdict(list)
+RATE_LIMIT_MAX = 10
+RATE_LIMIT_WINDOW = 60  # seconds
+
+
+def check_rate_limit(client_ip: str) -> bool:
+    """Check if client has exceeded rate limit. Returns True if allowed."""
+    now = time.time()
+    # Remove old entries outside the window
+    _rate_limit_store[client_ip] = [
+        t for t in _rate_limit_store[client_ip] if now - t < RATE_LIMIT_WINDOW
+    ]
+    if len(_rate_limit_store[client_ip]) >= RATE_LIMIT_MAX:
+        return False
+    _rate_limit_store[client_ip].append(now)
+    return True
 
 @app.get("/")
 async def root():
@@ -98,9 +119,18 @@ async def negotiate_endpoint(clause: str = Form(...)):
 
 @app.post("/compare", response_model=ComparisonResponse)
 async def compare_files(
+    request: Request,
     original_file: UploadFile = File(...),
     revised_file: UploadFile = File(...),
 ):
+    """Parse two contract files and return their sentences for diff comparison."""
+    # Rate limiting
+    client_ip = request.client.host if request.client else "unknown"
+    if not check_rate_limit(client_ip):
+        raise HTTPException(
+            status_code=429,
+            detail="Rate limit exceeded. Maximum 10 requests per minute."
+        )
     """Parse two contract files and return their sentences for diff comparison."""
     import io
     
@@ -170,9 +200,20 @@ def _parse_content(content: bytes, filename: str) -> str:
 
 
 @app.post("/compare/analyze", response_model=list[RiskAnalysisItem])
-async def compare_analyze(request: ComparisonAnalyzeRequest):
+async def compare_analyze(
+    request: Request,
+    body: ComparisonAnalyzeRequest,
+):
     """Analyze risk differences between two contract versions."""
-    items = await analyze_comparison(request.original, request.revised)
+    # Rate limiting
+    client_ip = request.client.host if request.client else "unknown"
+    if not check_rate_limit(client_ip):
+        raise HTTPException(
+            status_code=429,
+            detail="Rate limit exceeded. Maximum 10 requests per minute."
+        )
+    
+    items = await analyze_comparison(body.original, body.revised)
     return [RiskAnalysisItem(**item) for item in items]
 
 if __name__ == "__main__":
