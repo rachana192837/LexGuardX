@@ -4,8 +4,9 @@ import {
     Shield, FileText, Search, Activity, Settings, Upload,
     CheckCircle, AlertOctagon, X, LogOut, Menu, Brain,
     TrendingUp, AlertTriangle, Clock, Eye, Download, Filter,
-    User, Code, Building2, ShoppingBag
+    User, Code, Building2, ShoppingBag, ArrowLeftRight
 } from 'lucide-react';
+import CompareTab from '../components/CompareTab';
 
 // ─── Persona Definitions ───
 const PERSONAS = [
@@ -186,6 +187,7 @@ export default function Dashboard() {
     const navItems = [
         { name: 'Documents', icon: <FileText size={20} /> },
         { name: 'Analysis', icon: <Search size={20} /> },
+        { name: 'Comparison', icon: <ArrowLeftRight size={20} /> },
         { name: 'Audit Logs', icon: <Activity size={20} /> },
         { name: 'Settings', icon: <Settings size={20} /> },
     ];
@@ -221,6 +223,7 @@ export default function Dashboard() {
         switch (activeTab) {
             case 'Documents': return renderDocuments();
             case 'Analysis': return renderAnalysis();
+            case 'Comparison': return <CompareTab />;
             case 'Audit Logs': return renderAuditLogs();
             case 'Settings': return renderSettings();
             default: return renderAnalysis();
