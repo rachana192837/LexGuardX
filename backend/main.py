@@ -1,5 +1,6 @@
 import os
 import io
+import re
 import fitz
 import mammoth
 from dotenv import load_dotenv
@@ -101,7 +102,6 @@ async def compare_files(
     revised_file: UploadFile = File(...),
 ):
     """Parse two contract files and return their sentences for diff comparison."""
-    import re
     import io
     
     # Validate file types
